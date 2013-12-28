@@ -7,7 +7,6 @@ import (
   "os"
   "fmt"
   "io"
-  "io/ioutil"
   "log"
   "net/http"
   "strings"
@@ -89,10 +88,8 @@ func main() {
     }
     // Process the current token.
   }
-  robots, err := ioutil.ReadAll(res.Body)
   res.Body.Close()
   if err != nil {
     log.Fatal(err)
   }
-  fmt.Printf("%s", robots)
 }
