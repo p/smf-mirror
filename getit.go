@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-  res, err := http.Get("http://www.google.com/robots.txt")
+  res, err := http.Get("http://www.panynj.gov/path/full-schedules.html")
   if err != nil {
     log.Fatal(err)
   }
