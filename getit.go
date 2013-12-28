@@ -1,6 +1,3 @@
-// Fetching path schedules at web scale.
-// I'm guessing a shell script doing the same job will have fewer lines of code.
-
 package main
 
 import (

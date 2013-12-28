@@ -1,9 +1,6 @@
-# PATH schedule fetcher
+# SMF mirror tool
 
-Fetches schedules from http://www.panynj.gov/path/full-schedules.html.
-At web scale.
-
-My first go project.
+Mirrors SMF discussion boards.
 
 ## License
 
