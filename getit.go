@@ -6,11 +6,13 @@ import (
   "log"
   "net/http"
   "strings"
+  "path"
   "code.google.com/p/go.net/html"
 )
 
 func main() {
-  res, err := http.Get("http://www.panynj.gov/path/full-schedules.html")
+  start := "http://www.panynj.gov/path/full-schedules.html"
+  res, err := http.Get(start)
   if err != nil {
     log.Fatal(err)
   }
@@ -29,7 +31,8 @@ func main() {
           if string(key) == "href" {
             v := string(value)
             if strings.HasPrefix(v, "schedules/") {
-              fmt.Printf("%s\n", string(value))
+              url := path.Join(path.Dir(start), v)
+              fmt.Printf("%s\n", url)
             }
           }
           if !more {
