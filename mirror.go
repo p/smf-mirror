@@ -128,6 +128,27 @@ func findBoardLinks(client *http.Client, start string, board_links map[string]in
   return board_links
 }
 
+func loadBoardLinks(client *http.Client) {
+  board_links := map[string]int{}
+  board_links[start] = linkfound
+  for {
+    copy := board_links
+    any := false
+    for key, value := range copy {
+      if value == linkcrawled {
+        continue
+      }
+      fmt.Printf("%v\n", key)
+      board_links = findBoardLinks(client, key, board_links)
+      board_links[key] = linkcrawled
+      any = true
+    }
+    if !any {
+      break
+    }
+  }
+}
+
 func main() {
   //var start string
   //flag.StringVar(&start, "start", "", "starting url")
@@ -150,22 +171,5 @@ func main() {
   }
   Fuckoff(pres)
   
-  board_links := map[string]int{}
-  board_links[start] = linkfound
-  for {
-    copy := board_links
-    any := false
-    for key, value := range copy {
-      if value == linkcrawled {
-        continue
-      }
-      fmt.Printf("%v\n", key)
-      board_links = findBoardLinks(client, key, board_links)
-      board_links[key] = linkcrawled
-      any = true
-    }
-    if !any {
-      break
-    }
-  }
+  board_links := loadBoardLinks(client)
 }
