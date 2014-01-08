@@ -57,6 +57,40 @@ func fetch(url string) {
 func Fuckoff(pres *http.Response) {
 }
 
+func FindLinks(body io.Reader) chan string {
+  c := make(chan string)
+  
+  go func() {
+    z := html.NewTokenizer(body)
+    for {
+      tt := z.Next()
+      if tt == html.ErrorToken {
+        break
+      }
+      if tt == html.StartTagToken {
+        tn, _ := z.TagName()
+        if len(tn) == 1 && tn[0] == 'a' {
+          for {
+            key, value, more := z.TagAttr()
+            // http://stackoverflow.com/questions/14230145/what-is-the-best-way-to-convert-byte-array-to-string
+            if string(key) == "href" {
+              v := string(value)
+              // http://codereview.stackexchange.com/questions/28386/fibonacci-generator-with-golang
+              c <- v
+            }
+            if !more {
+              break
+            }
+          }
+        }
+      }
+    }
+    c <- ""
+  }()
+  
+  return c
+}
+
 func main() {
   //var start string
   //flag.StringVar(&start, "start", "", "starting url")
@@ -85,38 +119,21 @@ func main() {
   }
   //fmt.Printf("%s\n", start)
   
-  z := html.NewTokenizer(res.Body)
+  c := FindLinks(res.Body)
   for {
-    tt := z.Next()
-    if tt == html.ErrorToken {
+    v := <- c
+    if v == "" {
       break
     }
-    if tt == html.StartTagToken {
-      tn, _ := z.TagName()
-      if len(tn) == 1 && tn[0] == 'a' {
-        for {
-          key, value, more := z.TagAttr()
-          // http://stackoverflow.com/questions/14230145/what-is-the-best-way-to-convert-byte-array-to-string
-          if string(key) == "href" {
-            v := string(value)
-            if strings.HasPrefix(v, "schedules/") {
-              fuckedurl := path.Join(path.Dir(start), v)
-              // yep, hack it
-              // thx go for making me rename the variable
-              url := strings.Replace(fuckedurl, ":/", "://", 1)
-              fmt.Printf("%s\n", url)
-              fetch(url)
-            }
-          }
-          if !more {
-            break
-          }
-        }
-      }
-      // ...
-      //return ...
+    fmt.Printf("%v\n", v)
+    if strings.HasPrefix(v, "schedules/") {
+      fuckedurl := path.Join(path.Dir(start), v)
+      // yep, hack it
+      // thx go for making me rename the variable
+      url := strings.Replace(fuckedurl, ":/", "://", 1)
+      fmt.Printf("%s\n", url)
+      fetch(url)
     }
-    // Process the current token.
   }
   res.Body.Close()
   if err != nil {
