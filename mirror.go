@@ -1,6 +1,7 @@
 package main
 
 import (
+  "encoding/json"
   "os"
   "flag"
   "fmt"
@@ -12,6 +13,7 @@ import (
   "strings"
   "path"
   "code.google.com/p/go.net/html"
+  "github.com/steveyen/gkvlite"
 )
 
 func Split2(str, sep string) (string, string) {
@@ -128,7 +130,7 @@ func findBoardLinks(client *http.Client, start string, board_links map[string]in
   return board_links
 }
 
-func loadBoardLinks(client *http.Client) {
+func loadBoardLinks(client *http.Client, start string) (flat_links []string) {
   board_links := map[string]int{}
   board_links[start] = linkfound
   for {
@@ -147,6 +149,12 @@ func loadBoardLinks(client *http.Client) {
       break
     }
   }
+  
+  flat_links = []string{}
+  for key, _ := range board_links { 
+    flat_links = append(flat_links, key)
+  }
+  return flat_links
 }
 
 func main() {
@@ -171,5 +179,42 @@ func main() {
   }
   Fuckoff(pres)
   
-  board_links := loadBoardLinks(client)
+  f, err := os.OpenFile("smfmirror.gkvlite", os.O_RDWR, 0666)
+  if err != nil {
+    f, err = os.Create("smfmirror.gkvlite")
+  }
+  if err != nil {
+    panic(err)
+  }
+  s, err := gkvlite.NewStore(f)
+  if err != nil {
+    panic(err)
+  }
+  c := s.GetCollection("smfmirror")
+  if c == nil {
+    c = s.SetCollection("smfmirror", nil)
+  }
+  pboard_links, err := c.Get([]byte("board_links"))
+  var board_links []string
+  if pboard_links != nil {
+    err := json.Unmarshal(pboard_links, &board_links)
+    if err != nil {
+      panic(err)
+    }
+  } else {
+    board_links = loadBoardLinks(client, start)
+    b, err := json.Marshal(board_links)
+    if err != nil {
+      panic(err)
+    }
+    //c.Set([]byte("hello"), []byte("world"))
+    //a, x := c.Get([]byte("hello"))
+    //fmt.Printf("%v %v\n", a, x)
+    c.Set([]byte("board_links"), b)
+    s.Flush()
+    s.Close()
+    f.Sync()
+    f.Close()
+  }
+  fmt.Printf("%v\n", board_links)
 }
