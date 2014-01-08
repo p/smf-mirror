@@ -7,6 +7,7 @@ import (
   "io"
   "log"
   "net/http"
+  "net/http/cookiejar"
   "strings"
   "path"
   "code.google.com/p/go.net/html"
@@ -55,7 +56,13 @@ func main() {
   flag.Parse()
   start := flag.Args()[0]
   
-  res, err := http.Get(start)
+  // http://stackoverflow.com/questions/18414212/golang-how-to-follow-location-with-cookie
+  options := cookiejar.Options{}
+  cookie_jar, err := cookiejar.New(&options)
+  client := &http.Client{
+    Jar: cookie_jar,
+  }
+  res, err := client.Get(start)
   if err != nil {
     log.Fatal(err)
   }
