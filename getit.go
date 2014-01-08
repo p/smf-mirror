@@ -91,7 +91,13 @@ func FindLinks(body io.Reader) chan string {
   return c
 }
 
-func findBoardLinks(client *http.Client, start string, board_links map[string]bool) (board_links_out map[string]bool) {
+const (
+  _ = iota
+  linkfound
+  linkcrawled
+)
+
+func findBoardLinks(client *http.Client, start string, board_links map[string]int) (board_links_out map[string]int) {
   res, err := client.Get(start)
   if err != nil {
     log.Fatal(err)
@@ -109,7 +115,7 @@ func findBoardLinks(client *http.Client, start string, board_links map[string]bo
       fmt.Printf("recursing\n")
       _, found := board_links[v]
       if !found {
-        board_links[v] = true
+        board_links[v] = linkfound
       }
     }
   }
@@ -139,6 +145,6 @@ func main() {
   }
   Fuckoff(pres)
   
-  board_links := map[string]bool{}
+  board_links := map[string]int{}
   board_links = findBoardLinks(client, start, board_links)
 }
