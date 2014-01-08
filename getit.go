@@ -119,6 +119,7 @@ func main() {
   }
   //fmt.Printf("%s\n", start)
   
+  board_links := []string{}
   c := FindLinks(res.Body)
   for {
     v := <- c
@@ -126,6 +127,10 @@ func main() {
       break
     }
     fmt.Printf("%v\n", v)
+    if strings.Contains(v, start) && strings.Contains(v, "?board=") {
+      fmt.Printf("recursing\n")
+      board_links = append(board_links, v)
+    }
     if strings.HasPrefix(v, "schedules/") {
       fuckedurl := path.Join(path.Dir(start), v)
       // yep, hack it
