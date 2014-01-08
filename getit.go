@@ -131,14 +131,6 @@ func main() {
       fmt.Printf("recursing\n")
       board_links = append(board_links, v)
     }
-    if strings.HasPrefix(v, "schedules/") {
-      fuckedurl := path.Join(path.Dir(start), v)
-      // yep, hack it
-      // thx go for making me rename the variable
-      url := strings.Replace(fuckedurl, ":/", "://", 1)
-      fmt.Printf("%s\n", url)
-      fetch(url)
-    }
   }
   res.Body.Close()
   if err != nil {
