@@ -119,7 +119,8 @@ func main() {
   }
   //fmt.Printf("%s\n", start)
   
-  board_links := []string{}
+  board_links := map[string]bool{}
+  crawled_board_links := map[string]bool{}
   c := FindLinks(res.Body)
   for {
     v := <- c
@@ -129,7 +130,10 @@ func main() {
     fmt.Printf("%v\n", v)
     if strings.Contains(v, start) && strings.Contains(v, "?board=") {
       fmt.Printf("recursing\n")
-      board_links = append(board_links, v)
+      _, found := crawled_board_links[v]
+      if !found {
+        board_links[v] = true
+      }
     }
   }
   res.Body.Close()
