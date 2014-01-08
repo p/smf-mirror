@@ -91,6 +91,32 @@ func FindLinks(body io.Reader) chan string {
   return c
 }
 
+func findBoardLinks(client *http.Client, start string, board_links map[string]bool) (board_links_out map[string]bool) {
+  res, err := client.Get(start)
+  if err != nil {
+    log.Fatal(err)
+  }
+  //fmt.Printf("%s\n", start)
+  
+  c := FindLinks(res.Body)
+  for {
+    v := <- c
+    if v == "" {
+      break
+    }
+    fmt.Printf("%v\n", v)
+    if strings.Contains(v, start) && strings.Contains(v, "?board=") {
+      fmt.Printf("recursing\n")
+      _, found := board_links[v]
+      if !found {
+        board_links[v] = true
+      }
+    }
+  }
+  res.Body.Close()
+  return board_links
+}
+
 func main() {
   //var start string
   //flag.StringVar(&start, "start", "", "starting url")
@@ -113,28 +139,6 @@ func main() {
   }
   Fuckoff(pres)
   
-  res, err := client.Get(start)
-  if err != nil {
-    log.Fatal(err)
-  }
-  //fmt.Printf("%s\n", start)
-  
   board_links := map[string]bool{}
-  crawled_board_links := map[string]bool{}
-  c := FindLinks(res.Body)
-  for {
-    v := <- c
-    if v == "" {
-      break
-    }
-    fmt.Printf("%v\n", v)
-    if strings.Contains(v, start) && strings.Contains(v, "?board=") {
-      fmt.Printf("recursing\n")
-      _, found := crawled_board_links[v]
-      if !found {
-        board_links[v] = true
-      }
-    }
-  }
-  res.Body.Close()
+  board_links = findBoardLinks(client, start, board_links)
 }
