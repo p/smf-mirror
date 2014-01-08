@@ -8,10 +8,16 @@ import (
   "log"
   "net/http"
   "net/http/cookiejar"
+  "net/url"
   "strings"
   "path"
   "code.google.com/p/go.net/html"
 )
+
+func Split2(str, sep string) (string, string) {
+  s := strings.Split(str, sep)
+  return s[0], s[1]
+}
 
 func fetch(url string) {
   res, err := http.Get(url)
@@ -48,6 +54,9 @@ func fetch(url string) {
   res.Body.Close()
 }
 
+func Fuckoff(pres *http.Response) {
+}
+
 func main() {
   //var start string
   //flag.StringVar(&start, "start", "", "starting url")
@@ -55,6 +64,7 @@ func main() {
   
   flag.Parse()
   start := flag.Args()[0]
+  username, password := Split2(flag.Args()[1], ":")
   
   // http://stackoverflow.com/questions/18414212/golang-how-to-follow-location-with-cookie
   options := cookiejar.Options{}
@@ -62,6 +72,13 @@ func main() {
   client := &http.Client{
     Jar: cookie_jar,
   }
+  pres, err := client.PostForm(start + "index.php?action=login2",
+    url.Values{"user": {username}, "passwrd": {password}})
+  if err != nil {
+    log.Fatal(err)
+  }
+  Fuckoff(pres)
+  
   res, err := client.Get(start)
   if err != nil {
     log.Fatal(err)
