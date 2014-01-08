@@ -2,6 +2,7 @@ package main
 
 import (
   "os"
+  "flag"
   "fmt"
   "io"
   "log"
@@ -47,11 +48,19 @@ func fetch(url string) {
 }
 
 func main() {
-  start := "http://www.panynj.gov/path/full-schedules.html"
+  //var start string
+  //flag.StringVar(&start, "start", "", "starting url")
+  //flag.Parse()
+  
+  flag.Parse()
+  start := flag.Args()[0]
+  
   res, err := http.Get(start)
   if err != nil {
     log.Fatal(err)
   }
+  //fmt.Printf("%s\n", start)
+  
   z := html.NewTokenizer(res.Body)
   for {
     tt := z.Next()
