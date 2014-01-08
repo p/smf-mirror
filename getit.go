@@ -110,9 +110,14 @@ func findBoardLinks(client *http.Client, start string, board_links map[string]in
     if v == "" {
       break
     }
-    fmt.Printf("%v\n", v)
+    //fmt.Printf("%v\n", v)
     if strings.Contains(v, start) && strings.Contains(v, "?board=") {
-      fmt.Printf("recursing\n")
+      // index.php?board=18.0;sort=starter -- drop ;.*
+      if strings.Contains(v, ";") {
+        pre, _ := Split2(v, ";")
+        v = pre
+      }
+      //fmt.Printf("recursing\n")
       _, found := board_links[v]
       if !found {
         board_links[v] = linkfound
@@ -146,5 +151,21 @@ func main() {
   Fuckoff(pres)
   
   board_links := map[string]int{}
-  board_links = findBoardLinks(client, start, board_links)
+  board_links[start] = linkfound
+  for {
+    copy := board_links
+    any := false
+    for key, value := range copy {
+      if value == linkcrawled {
+        continue
+      }
+      fmt.Printf("%v\n", key)
+      board_links = findBoardLinks(client, key, board_links)
+      board_links[key] = linkcrawled
+      any = true
+    }
+    if !any {
+      break
+    }
+  }
 }
