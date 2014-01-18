@@ -121,8 +121,10 @@ func findBoardLinks(client *http.Client, start string, url string, board_links m
     if v == "" {
       break
     }
-    //fmt.Printf("%v\n", v)
-    if strings.Contains(v, start) && strings.Contains(v, "?board=") {
+    // .0 makes only the first page of each board count
+    if strings.Contains(v, start) && strings.Contains(v, "?board=") && strings.HasSuffix(v, ".0") {
+          fmt.Printf("bb %v\n", v)
+
       // index.php?board=18.0;sort=starter -- drop ;.*
       if strings.Contains(v, ";") {
         pre, _ := Split2(v, ";")
