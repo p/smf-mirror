@@ -159,6 +159,9 @@ func loadBoardLinks(client *http.Client, start string) (flat_links []string) {
     }
   }
   
+  // start is not a board
+  delete(board_links, start)
+  
   flat_links = []string{}
   for key, _ := range board_links { 
     flat_links = append(flat_links, key)
