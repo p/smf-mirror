@@ -163,6 +163,9 @@ func main() {
   //flag.Parse()
   
   flag.Parse()
+  if len(flag.Args()) < 2 {
+    log.Fatal("Usage: mirror start-url credentials")
+  }
   start := flag.Args()[0]
   username, password := Split2(flag.Args()[1], ":")
   
