@@ -1,6 +1,8 @@
 package main
 
 import (
+  "io/ioutil"
+  "bytes"
   "encoding/json"
   "os"
   "flag"
@@ -175,12 +177,20 @@ func main() {
   client := &http.Client{
     Jar: cookie_jar,
   }
-  pres, err := client.PostForm(start + "index.php?action=login2",
-    url.Values{"user": {username}, "passwrd": {password}})
+  v := url.Values{"user": {username}, "passwrd": {password}}
+  req, err := http.NewRequest("POST", start + "index.php?action=login2",
+    bytes.NewReader([]byte(v.Encode())))
+  // ugh
+  req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+  req.Header.Add("Accept-Encoding", "identity")
+  pres, err := client.Do(req)
   if err != nil {
     log.Fatal(err)
   }
-  Fuckoff(pres)
+  contents, err := ioutil.ReadAll(pres.Body)
+  if !strings.Contains(string(contents), "action=unread") {
+    log.Fatal("Login did not work")
+  }
   
   f, err := os.OpenFile("smfmirror.gkvlite", os.O_RDWR, 0666)
   if err != nil {
