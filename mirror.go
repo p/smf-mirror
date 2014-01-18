@@ -61,6 +61,16 @@ func fetch(url string) {
 func Fuckoff(pres *http.Response) {
 }
 
+func DoGet(client *http.Client, url string) (res *http.Response) {
+  req, err := http.NewRequest("GET", url, nil)
+  req.Header.Add("Accept-Encoding", "identity")
+  xres, err := client.Do(req)
+  if err != nil {
+    log.Fatal(err)
+  }
+  return xres
+}
+
 func FindLinks(body io.Reader) chan string {
   c := make(chan string)
   
@@ -101,11 +111,8 @@ const (
   linkcrawled
 )
 
-func findBoardLinks(client *http.Client, start string, board_links map[string]int) (board_links_out map[string]int) {
-  res, err := client.Get(start)
-  if err != nil {
-    log.Fatal(err)
-  }
+func findBoardLinks(client *http.Client, start string, url string, board_links map[string]int) (board_links_out map[string]int) {
+  res := DoGet(client, url)
   //fmt.Printf("%s\n", start)
   
   c := FindLinks(res.Body)
@@ -143,7 +150,7 @@ func loadBoardLinks(client *http.Client, start string) (flat_links []string) {
         continue
       }
       fmt.Printf("%v\n", key)
-      board_links = findBoardLinks(client, key, board_links)
+      board_links = findBoardLinks(client, start, key, board_links)
       board_links[key] = linkcrawled
       any = true
     }
