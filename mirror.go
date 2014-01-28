@@ -71,9 +71,14 @@ func DoGet(client *http.Client, url string) (res *http.Response) {
   return xres
 }
 
-func FindLinks(body io.Reader) chan string {
-  c := make(chan string)
-  
+type link struct {
+  title string
+  href string
+}
+
+func FindLinks(body io.Reader) chan link {
+  c := make(chan link)
+
   go func() {
     z := html.NewTokenizer(body)
     for {
@@ -90,7 +95,7 @@ func FindLinks(body io.Reader) chan string {
             if string(key) == "href" {
               v := string(value)
               // http://codereview.stackexchange.com/questions/28386/fibonacci-generator-with-golang
-              c <- v
+              c <- link{v, v}
             }
             if !more {
               break
@@ -99,7 +104,7 @@ func FindLinks(body io.Reader) chan string {
         }
       }
     }
-    c <- ""
+    c <- link{"", ""}
   }()
 
   return c
@@ -117,8 +122,9 @@ func findBoardLinks(client *http.Client, start string, url string, board_links m
 
   c := FindLinks(res.Body)
   for {
-    v := <- c
-    if v == "" {
+    l := <- c
+    v := l.href
+    if l.title == "" {
       break
     }
     // .0 makes only the first page of each board count
@@ -165,7 +171,7 @@ func loadBoardLinks(client *http.Client, start string) (flat_links []string) {
   delete(board_links, start)
 
   flat_links = []string{}
-  for key, _ := range board_links { 
+  for key, _ := range board_links {
     flat_links = append(flat_links, key)
   }
   return flat_links
@@ -241,5 +247,10 @@ func main() {
     f.Sync()
     f.Close()
   }
-  fmt.Printf("%v\n", board_links)
+
+  for _, url := range board_links {
+    fmt.Printf("%v\n", url)
+
+  }
+  //fmt.Printf("%v\n", board_links)
 }
