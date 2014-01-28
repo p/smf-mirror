@@ -50,7 +50,7 @@ func fetch(url string) {
     if n == 0 {
       break
     }
-    
+
     if _, err := fo.Write(buf[:n]); err != nil {
       panic(err)
     }
@@ -101,7 +101,7 @@ func FindLinks(body io.Reader) chan string {
     }
     c <- ""
   }()
-  
+
   return c
 }
 
@@ -114,7 +114,7 @@ const (
 func findBoardLinks(client *http.Client, start string, url string, board_links map[string]int) (board_links_out map[string]int) {
   res := DoGet(client, url)
   //fmt.Printf("%s\n", start)
-  
+
   c := FindLinks(res.Body)
   for {
     v := <- c
@@ -160,10 +160,10 @@ func loadBoardLinks(client *http.Client, start string) (flat_links []string) {
       break
     }
   }
-  
+
   // start is not a board
   delete(board_links, start)
-  
+
   flat_links = []string{}
   for key, _ := range board_links { 
     flat_links = append(flat_links, key)
@@ -175,14 +175,14 @@ func main() {
   //var start string
   //flag.StringVar(&start, "start", "", "starting url")
   //flag.Parse()
-  
+
   flag.Parse()
   if len(flag.Args()) < 2 {
     log.Fatal("Usage: mirror start-url credentials")
   }
   start := flag.Args()[0]
   username, password := Split2(flag.Args()[1], ":")
-  
+
   // http://stackoverflow.com/questions/18414212/golang-how-to-follow-location-with-cookie
   options := cookiejar.Options{}
   cookie_jar, err := cookiejar.New(&options)
@@ -203,7 +203,7 @@ func main() {
   if !strings.Contains(string(contents), "action=unread") {
     log.Fatal("Login did not work")
   }
-  
+
   f, err := os.OpenFile("smfmirror.gkvlite", os.O_RDWR, 0666)
   if err != nil {
     f, err = os.Create("smfmirror.gkvlite")
